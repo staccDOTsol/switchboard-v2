@@ -17,8 +17,9 @@ no-log-ix-name = []
 cpi = ["no-entrypoint"]
 
 [dependencies]
+raindrops-matches = { path = "../../../raindrops/rust/matches", features = ["cpi","no-entrypoint"] } 
 # switchboard-v2 = { path = "../../rust/switchboard-v2" }
-switchboard-v2 = { version = "^0.1.16" }
+switchboard-v2 = { version = "^0.1.16", features = ["no-entrypoint"] } 
 anchor-lang = "^0.25.0"
 anchor-spl = "^0.25.0"
 solana-program = "~1.10.29"

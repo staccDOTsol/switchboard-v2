@@ -1,6 +1,6 @@
 [workspace]
 members = [
-    "programs/*"
+    "."
 ]
 
 [provider]
@@ -9,7 +9,7 @@ cluster = "devnet"
 wallet = "~/.config/solana/id.json"
 
 [programs.localnet]
-anchor_vrf_parser = "HjjRFjCyQH3ne6Gg8Yn3TQafrrYecRrphwLwnh2A26vM"
+anchor_vrf_parser = "2NrzAhEHfvyqknfQ6oSC4i3cGmxPRSpa5g3oWWWVWVtd"
 
 [registry]
 url = "https://anchor.projectserum.com"

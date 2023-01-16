@@ -1,12 +1,13 @@
 pub mod actions;
+pub use crate::raindrops_matches::CreateOrUpdateOracleArgs;
 pub use actions::*;
-
 pub use anchor_lang::prelude::*;
 use anchor_spl::token::TokenAccount;
 
+pub use raindrops_matches;
 pub use switchboard_v2::SWITCHBOARD_PROGRAM_ID;
 
-declare_id!("HjjRFjCyQH3ne6Gg8Yn3TQafrrYecRrphwLwnh2A26vM");
+declare_id!("2NrzAhEHfvyqknfQ6oSC4i3cGmxPRSpa5g3oWWWVWVtd");
 
 const MAX_RESULT: u64 = u64::MAX;
 
@@ -22,8 +23,12 @@ pub mod anchor_vrf_parser {
     }
 
     #[access_control(ctx.accounts.validate(&ctx))]
-    pub fn update_result(ctx: Context<UpdateResult>) -> Result<()> {
-        UpdateResult::actuate(&ctx)
+    pub fn update_result(
+        ctx: Context<UpdateResult>,
+        args: CreateOrUpdateOracleArgs,
+        win_args: CreateOrUpdateOracleArgs,
+    ) -> Result<()> {
+        UpdateResult::actuate(&ctx, args, win_args)
     }
 
     #[access_control(ctx.accounts.validate(&ctx, &params))]

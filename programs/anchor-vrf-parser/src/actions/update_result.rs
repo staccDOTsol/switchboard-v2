@@ -2,6 +2,21 @@ use crate::*;
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::clock;
 pub use switchboard_v2::VrfAccountData;
+pub use raindrops_matches::Root;
+pub use raindrops_matches::TokenDelta;
+pub use crate::raindrops_matches::CreateOrUpdateOracleArgs;
+
+
+use raindrops_matches;
+#[derive(AnchorSerialize, AnchorDeserialize, Clone)]
+pub struct OracleArgs {
+    token_transfer_root: Option<Root>,
+    token_transfers: Option<Vec<TokenDelta>>,
+    seed: Pubkey,
+    space: u64,
+    finalized: bool,
+}
+
 
 #[derive(Accounts)]
 pub struct UpdateResult<'info> {
@@ -14,8 +29,21 @@ pub struct UpdateResult<'info> {
             *vrf.to_account_info().owner == SWITCHBOARD_PROGRAM_ID @ VrfErrorCode::InvalidSwitchboardAccount
     )]
     pub vrf: AccountLoader<'info, VrfAccountData>,
+    pub system_program: Program<'info, System>,
+    pub rent: Sysvar<'info, Rent>,
+    #[account(
+            address = raindrops_matches::id()
+    )]
+    /// CHECKED: check
+    pub raindrops: UncheckedAccount<'info>,
+    #[account(
+            address = crate::id()
+    )]
+    pub payer: Signer<'info>,
+    /// CHECKED: check
+    pub this: UncheckedAccount<'info>,
+    pub oracle: Account<'info, raindrops_matches::WinOracle>
 }
-
 impl UpdateResult<'_> {
     pub fn validate(&self, _ctx: &Context<Self>) -> Result<()> {
         // We should check VRF account passed is equal to the pubkey stored in our client state
@@ -23,7 +51,7 @@ impl UpdateResult<'_> {
         Ok(())
     }
 
-    pub fn actuate(ctx: &Context<Self>) -> Result<()> {
+    pub fn actuate(ctx: &Context<Self>, args: CreateOrUpdateOracleArgs, win_args:CreateOrUpdateOracleArgs) -> Result<()> {
         let clock = clock::Clock::get().unwrap();
 
         emit!(VrfClientInvoked {
@@ -63,7 +91,25 @@ impl UpdateResult<'_> {
                 timestamp: clock.unix_timestamp,
             });
         }
+        let cpi_accounts = raindrops_matches::cpi::accounts::CreateOrUpdateOracle {
+            oracle: ctx.accounts.oracle.to_account_info(),
+            payer: ctx.accounts.this.to_account_info(),
+            system_program: ctx.accounts.system_program.to_account_info(),
+            rent: ctx.accounts.rent.to_account_info(),
+        };
+        let cpi_program = ctx.accounts.raindrops.to_account_info();
 
-        Ok(())
+        let cpi_ctx = CpiContext::new(cpi_program, cpi_accounts);
+        if result == 0 {
+          
+            // winner winner chickum dinner
+                raindrops_matches::cpi::create_or_update_oracle(cpi_ctx, win_args);
+        }
+        else {
+            // sorry not sorry
+              // winner winner chickum dinner
+                raindrops_matches::cpi::create_or_update_oracle(cpi_ctx, args);
+        }
+            Ok(())
     }
 }

@@ -2,7 +2,7 @@ use crate::*;
 use anchor_lang::prelude::*;
 pub use switchboard_v2::VrfAccountData;
 use std::mem;
-
+ 
 #[derive(Accounts)]
 #[instruction(params: InitStateParams)]
 pub struct InitState<'info> {
@@ -70,7 +70,7 @@ impl InitState<'_> {
         if params.max_result == 0 {
             state.max_result = MAX_RESULT;
         } else {
-            state.max_result = params.max_result;
+            state.max_result = 12;//params.max_result;
         }
 
         Ok(())
